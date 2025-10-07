@@ -5,7 +5,11 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        cdl: ["'MADECarvingSoft'", "sans-serif"],
+      },
+    },
   },
   plugins: [],
 }

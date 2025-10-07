@@ -9,9 +9,7 @@ const Navbar: React.FC = () => {
   return (
     <>
       <nav className="bg-[#1e1f25] flex items-center justify-between px-4 h-16 md:hidden top-0 left-0 w-full z-50">
-        <span className="font-bold text-lg whitespace-nowrap">
-          <span className="text-[#f26927]">CDL</span> <span className="text-white">DATA</span>
-        </span>
+        <img src="/public/logo/logo-cdl-data.png" alt="CDL Data Logo" className="h-12 w-auto object-contain"/>
         <input
           type="text"
           placeholder="Rechercher..."
