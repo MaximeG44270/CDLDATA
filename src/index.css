@@ -17,3 +17,34 @@ body {
   font-style: normal;
   font-display: swap;
 }
+
+@keyframes spin {
+  100% {
+    rotate: 1turn;
+  }
+}
+
+.animate-spin-linear {
+  animation: spin 50s infinite linear;
+}
+
+.textbox input:focus,
+.textbox input:not(:invalid)~label {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.login button {
+  color: #f9f9f9;
+  background: var(--color-primary);
+}
+
+.login a {
+  font-size: 14px;
+  color: var(--color-primary);
+}
+
+.login p {
+  margin: 48px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
