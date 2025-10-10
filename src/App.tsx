@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import AdminDashboard from './Components/Admin/AdminDashboard/AdminDashboard';
 import AdminResultats from './Components/Admin/AdminResultats/AdminResultats';
 import AdminCreation from './Components/Admin/AdminCreation/AdminCreation';
+import AdminSaison from './Components/Admin/AdminCreation/AdminSaison/AdminSaison';
+import AdminEquipe from './Components/Admin/AdminCreation/AdminEquipe/AdminEquipe';
 
 const AdminRoute = () => {
   const { isAdmin } = useAdmin();
@@ -19,10 +21,13 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<AdminLogin />} />
+
       <Route element={<AdminRoute />}>
         <Route path="/admin-cdldata" element={<AdminDashboard />} />
         <Route path="/admin-resultats" element={<AdminResultats />} />
         <Route path="/admin-creation" element={<AdminCreation />} />
+        <Route path="/admin-saison" element={<AdminSaison />} />
+        <Route path="/admin-equipe" element={<AdminEquipe />} />
       </Route>
     </Routes>
   );
