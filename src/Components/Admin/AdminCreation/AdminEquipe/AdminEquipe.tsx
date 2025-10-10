@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavbarreAdmin } from "../../Navbarre/NavbarreAdmin";
 import { supabase } from "../../../../lib/supabaseClient";
 import { AdminAjoutTeam } from "./AdminAjoutTeam";
@@ -30,6 +31,7 @@ interface RawTeamRow {
 }
 
 export default function AdminEquipe() {
+  const navigate = useNavigate();
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [saisons, setSaisons] = useState<Saison[]>([]);
   const [nomEquipe, setNomEquipe] = useState("");
@@ -43,10 +45,7 @@ export default function AdminEquipe() {
 
   const fetchSaisons = async () => {
     const { data, error } = await supabase.from("seasons").select("*").order("id");
-    if (error || !data) {
-      setMessage("❌ Erreur lors du chargement des saisons.");
-      return;
-    }
+    if (error || !data) return setMessage("❌ Erreur lors du chargement des saisons.");
     setSaisons(data as Saison[]);
   };
 
@@ -56,106 +55,84 @@ export default function AdminEquipe() {
       .select("id, name, season_id, logo_url, franchise_name, structure_name, seasons(name)")
       .order("id");
 
-    if (error || !data) {
-      setMessage("❌ Erreur lors du chargement des équipes.");
-      return;
-    }
+    if (error || !data) return setMessage("❌ Erreur lors du chargement des équipes.");
 
-    const formatted: Equipe[] = (data as RawTeamRow[]).map((equipe) => {
-      let seasonName = "Saison inconnue";
-      if (equipe.seasons) {
-        if (Array.isArray(equipe.seasons) && equipe.seasons.length > 0) {
-          seasonName = equipe.seasons[0].name;
-        } else if (!Array.isArray(equipe.seasons)) {
-          seasonName = equipe.seasons.name;
-        }
-      }
-      return {
-        id: equipe.id,
-        name: equipe.name,
-        season_id: equipe.season_id,
-        season_name: seasonName,
-        logo_url: equipe.logo_url ?? undefined,
-        franchise_name: equipe.franchise_name,
-        structure_name: equipe.structure_name ?? undefined,
-      };
-    });
+    const formatted: Equipe[] = (data as RawTeamRow[]).map((eq) => ({
+      id: eq.id,
+      name: eq.name,
+      season_id: eq.season_id,
+      season_name:
+        Array.isArray(eq.seasons) && eq.seasons.length > 0
+          ? eq.seasons[0].name
+          : !Array.isArray(eq.seasons) && eq.seasons
+          ? eq.seasons.name
+          : "Saison inconnue",
+      logo_url: eq.logo_url ?? undefined,
+      franchise_name: eq.franchise_name,
+      structure_name: eq.structure_name ?? undefined,
+    }));
+
     setEquipes(formatted);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const validExtensions = ["jpg", "jpeg", "png", "webp"];
-    const fileExt = file.name.split(".").pop()?.toLowerCase();
-    if (!fileExt || !validExtensions.includes(fileExt)) {
-      setMessage("❌ Seules les images (JPEG, PNG, WebP) sont autorisées.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setMessage("❌ L'image ne doit pas dépasser 2 Mo.");
-      return;
-    }
-    setLogoFile(file);
+  const uploadLogo = async (file: File): Promise<string | undefined> => {
+    const fileExt = file.name.split(".").pop() ?? "png";
+    const fileName = `${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage.from("team-logos").upload(fileName, file);
+    if (uploadError) throw uploadError;
+    const { data: publicUrlData } = supabase.storage.from("team-logos").getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
   };
 
   const addEquipe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nomEquipe.trim() || !saisonChoisie || !franchiseName.trim()) {
       setMessage("⚠️ Veuillez remplir le nom, la franchise et choisir une saison.");
-      setTimeout(() => setMessage(null), 3000);
-      return;
+      return setTimeout(() => setMessage(null), 3000);
     }
 
     const existing = equipes.find(
-      (eq) => eq.name.toLowerCase() === nomEquipe.trim().toLowerCase() && eq.season_id === Number(saisonChoisie)
+      (eq) =>
+        eq.name.toLowerCase() === nomEquipe.trim().toLowerCase() &&
+        eq.season_id === Number(saisonChoisie)
     );
     if (existing) {
       setMessage("⚠️ Cette équipe existe déjà pour cette saison.");
-      setTimeout(() => setMessage(null), 3000);
-      return;
+      return setTimeout(() => setMessage(null), 3000);
     }
 
     setIsLoading(true);
     let logo_url: string | undefined;
-    if (logoFile) {
-      try {
-        const fileExt = logoFile.name.split(".").pop() ?? "png";
-        const fileName = `${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("team-logos").upload(fileName, logoFile);
-        if (uploadError) throw uploadError;
-        const { data: publicUrlData } = supabase.storage.from("team-logos").getPublicUrl(fileName);
-        logo_url = publicUrlData.publicUrl;
-      } catch {
-        setMessage("❌ Erreur lors de l'upload du logo.");
-        setIsLoading(false);
-        return;
-      }
-    }
 
-    const { error } = await supabase.from("teams").insert([
-      {
-        name: nomEquipe.trim(),
-        season_id: Number(saisonChoisie),
-        logo_url,
-        franchise_name: franchiseName.trim(),
-        structure_name: structureName.trim() || null,
-      },
-    ]);
+    try {
+      if (logoFile) logo_url = await uploadLogo(logoFile);
 
-    if (error) setMessage("❌ Erreur lors de l'ajout de l'équipe.");
-    else {
+      const { error } = await supabase.from("teams").insert([
+        {
+          name: nomEquipe.trim(),
+          season_id: Number(saisonChoisie),
+          logo_url,
+          franchise_name: franchiseName.trim(),
+          structure_name: structureName.trim() || null,
+        },
+      ]);
+
+      if (error) throw error;
+
       setNomEquipe("");
       setSaisonChoisie("");
       setFranchiseName("");
       setStructureName("");
       setLogoFile(null);
-      setMessage("✅ Équipe ajoutée !");
-      fetchEquipes();
-    }
 
-    setIsLoading(false);
-    setTimeout(() => setMessage(null), 3000);
+      setMessage("✅ Équipe ajoutée !");
+      await fetchEquipes();
+    } catch {
+      setMessage("❌ Erreur lors de l'ajout de l'équipe ou du logo.");
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
   const confirmDeleteEquipe = (id: number, name: string) => setPopup({ id, name });
@@ -166,7 +143,7 @@ export default function AdminEquipe() {
     if (error) setMessage("❌ Erreur lors de la suppression.");
     else {
       setMessage("🗑️ Équipe supprimée !");
-      fetchEquipes();
+      await fetchEquipes();
     }
     setPopup(null);
     setIsLoading(false);
@@ -186,6 +163,16 @@ export default function AdminEquipe() {
     <div className="min-h-screen bg-[#f4f1f7] font-cdl pt-16">
       <NavbarreAdmin />
       <div className="max-w-6xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Gestion des équipes</h1>
+          <button
+            onClick={() => navigate("/admin-creation")}
+            className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
+          >
+            Retour à l’accueil création
+          </button>
+        </div>
+
         {message && (
           <div
             className={`mb-4 p-3 rounded text-sm ${
@@ -208,7 +195,21 @@ export default function AdminEquipe() {
           saisonChoisie={saisonChoisie}
           setSaisonChoisie={setSaisonChoisie}
           saisons={saisons}
-          handleFileChange={handleFileChange}
+          handleFileChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const validExtensions = ["jpg", "jpeg", "png", "webp"];
+            const ext = file.name.split(".").pop()?.toLowerCase();
+            if (!ext || !validExtensions.includes(ext)) {
+              setMessage("❌ Seules les images (JPEG, PNG, WebP) sont autorisées.");
+              return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+              setMessage("❌ L'image ne doit pas dépasser 2 Mo.");
+              return;
+            }
+            setLogoFile(file);
+          }}
           addEquipe={addEquipe}
           isLoading={isLoading}
         />
@@ -237,7 +238,7 @@ export default function AdminEquipe() {
                 </button>
                 <button
                   onClick={() => deleteEquipe(popup.id)}
-                  className="px-4 py-2 rounded bg-[#2495d8] text-white hover:bg-[#2495d8] transition"
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-800 transition"
                   disabled={isLoading}
                 >
                   Supprimer
