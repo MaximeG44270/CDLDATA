@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavbarreAdmin } from "../../Navbarre/NavbarreAdmin";
 import { supabase } from "../../../../lib/supabaseClient";
-
-interface Saison {
-  id: number;
-  name: string;
-  start_date: string | null;
-  end_date: string | null;
-}
+import { Saison } from "../../../../types/types";
 
 export default function AdminSaison() {
   const [saisons, setSaisons] = useState<Saison[]>([]);

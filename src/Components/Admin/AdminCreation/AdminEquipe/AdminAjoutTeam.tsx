@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import type { Saison } from "./AdminEquipe";
 
+
 interface Props {
   nomEquipe: string;
   setNomEquipe: (value: string) => void;

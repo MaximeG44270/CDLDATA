@@ -4,20 +4,11 @@ import { NavbarreAdmin } from "../../Navbarre/NavbarreAdmin";
 import { supabase } from "../../../../lib/supabaseClient";
 import { AdminAjoutTeam } from "./AdminAjoutTeam";
 import { AdminTableauTeam } from "./AdminTableauTeam";
+import { Equipe } from "../../../../types/types";
 
 export interface Saison {
   id: number;
   name: string;
-}
-
-export interface Equipe {
-  id: number;
-  name: string;
-  season_id: number;
-  season_name: string;
-  logo_url?: string;
-  franchise_name: string;
-  structure_name?: string;
 }
 
 interface RawTeamRow {
