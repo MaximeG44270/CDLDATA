@@ -134,15 +134,13 @@ export default function AdminJoueurs() {
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
       setUploadProgress(10);
-      
-      // Créer un nom de fichier unique
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       setUploadProgress(30);
 
-      // Upload vers Supabase Storage
       const { error } = await supabase.storage
         .from('player-images')
         .upload(filePath, file, {
@@ -157,7 +155,6 @@ export default function AdminJoueurs() {
 
       setUploadProgress(70);
 
-      // Récupérer l'URL publique
       const { data: urlData } = supabase.storage
         .from('player-images')
         .getPublicUrl(filePath);
@@ -187,7 +184,6 @@ export default function AdminJoueurs() {
     try {
       let finalImageUrl = null;
 
-      // Si un fichier a été sélectionné, l'uploader
       if (imageFile) {
         finalImageUrl = await uploadImage(imageFile);
         if (!finalImageUrl) {
@@ -239,21 +235,17 @@ export default function AdminJoueurs() {
     setIsLoading(true);
     
     try {
-      // Récupérer les infos du joueur pour supprimer son image
       const joueur = joueurs.find(j => j.id === id);
       
       if (joueur?.image_url) {
-        // Extraire le nom du fichier de l'URL
         const urlParts = joueur.image_url.split('/');
         const fileName = urlParts[urlParts.length - 1];
         
-        // Supprimer l'image du storage
         await supabase.storage
           .from('player-images')
           .remove([fileName]);
       }
       
-      // Supprimer le joueur de la base de données
       const { error } = await supabase.from("players").delete().eq("id", id);
       
       if (error) throw error;
@@ -284,12 +276,22 @@ export default function AdminJoueurs() {
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Gestion des joueurs</h1>
-          <button
-            onClick={() => navigate("/admin-creation")}
-            className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
-          >
-            Retour à l'accueil création
-          </button>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/admin-cdldata')}
+              className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
+            >
+              Retour à l'admin Dashboard
+            </button>
+          
+            <button
+              onClick={() => navigate('/admin-creation')}
+              className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
+            >
+              Retour à l'accueil création
+            </button>
+          </div>
         </div>
         {message && (
           <div

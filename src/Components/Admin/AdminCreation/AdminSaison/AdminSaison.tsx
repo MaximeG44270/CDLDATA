@@ -61,12 +61,22 @@ export default function AdminSaison() {
       <div className="max-w-5xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Gestion des saisons</h1>
-          <button
-            onClick={() => navigate("/admin-creation")}
-            className="bg-[#2495d8] hover:bg-[#2495d8] text-white px-4 py-2 rounded transition"
-          >
-            Retour à l’accueil création
-          </button>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/admin-cdldata')}
+              className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
+            >
+              Retour à l'admin Dashboard
+            </button>
+          
+            <button
+              onClick={() => navigate('/admin-creation')}
+              className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
+            >
+              Retour à l’accueil création
+            </button>
+          </div>
         </div>
 
         {message && (

@@ -5,39 +5,81 @@ export default function AdminCreation() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#f4f1f7] font-sans pt-16">
+    <div className="min-h-screen bg-[#f4f1f7]">
       <NavbarreAdmin />
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Création</h1>
 
-        <div
-          onClick={() => navigate("/admin-saison")}
-          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition mb-4"
-        >
-          <p>Formulaire de création pour une saison</p>
-        </div>
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        <div className="p-6 lg:p-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Création</h1>
+            <p className="text-gray-600">
+              Sélectionnez le type de contenu à créer
+            </p>
+          </div>
 
-        <div
-          onClick={() => navigate("/admin-equipe")}
-          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition mb-4"
-        >
-          <p>Formulaire de création pour une équipe</p>
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div
+              onClick={() => navigate("/admin-saison")}
+              className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-700">Saison</h3>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📅</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Créer une nouvelle saison
+              </p>
+            </div>
 
-        <div
-          onClick={() => navigate("/admin-joueurs")}
-          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition mb-4"
-        >
-          <p>Formulaire de création pour un joueur</p>
-        </div>
+            <div
+              onClick={() => navigate("/admin-equipe")}
+              className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-700">Équipe</h3>
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🏆</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Ajouter une nouvelle équipe
+              </p>
+            </div>
 
-        <div
-          onClick={() => navigate("/admin-maps")}
-          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition"
-        >
-          <p>Formulaire de création pour une map</p>
+            <div
+              onClick={() => navigate("/admin-joueurs")}
+              className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-700">Joueur</h3>
+                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🎮</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Créer une fiche joueur
+              </p>
+            </div>
+
+            <div
+              onClick={() => navigate("/admin-maps")}
+              className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-700">Map</h3>
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🗺️</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Ajouter une nouvelle map
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
