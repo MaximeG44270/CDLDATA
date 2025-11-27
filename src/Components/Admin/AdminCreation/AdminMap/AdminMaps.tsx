@@ -2,42 +2,31 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavbarreAdmin } from "../../Navbarre/NavbarreAdmin";
 import { supabase } from "../../../../lib/supabaseClient";
-import { AdminAjoutJoueur } from "./AdminAjoutJoueur";
-import { AdminTableauJoueur } from "./AdminTableauJoueurs";
-import type { Joueur, Equipe, Saison } from "../../../../types/types";
+import { AdminAjoutMap } from "./AdminAjoutMap";
+import { AdminTableauMaps } from "./AdminTableauMaps";
+import type { Map, Saison } from "../../../../types/types";
 
-type PlayerFromSupabase = {
+type MapFromSupabase = {
   id: number;
-  team_id: number;
-  gamertag: string;
-  role: string;
-  first_name?: string;
-  last_name?: string;
-  birth_country?: string;
-  birth_date?: string;
+  season_id: number;
+  name: string;
   image_url?: string;
-  teams: { name: string } | { name: string }[] | null;
+  seasons: { name: string } | { name: string }[] | null;
 };
 
-export default function AdminJoueurs() {
+export default function AdminMaps() {
   const navigate = useNavigate();
-  const [joueurs, setJoueurs] = useState<Joueur[]>([]);
-  const [equipes, setEquipes] = useState<Equipe[]>([]);
+  const [maps, setMaps] = useState<Map[]>([]);
   const [saisons, setSaisons] = useState<Saison[]>([]);
   const [saisonSelectionnee, setSaisonSelectionnee] = useState<number | "">("");
-  const [teamChoisie, setTeamChoisie] = useState<number | "">("");
-  const [gamertag, setGamertag] = useState("");
-  const [role, setRole] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [birthCountry, setBirthCountry] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [saisonChoisie, setSaisonChoisie] = useState<number | "">("");
+  const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [popup, setPopup] = useState<{ id: number; gamertag: string } | null>(null);
+  const [popup, setPopup] = useState<{ id: number; name: string } | null>(null);
 
   const fetchSaisons = async () => {
     const { data, error } = await supabase
@@ -57,94 +46,52 @@ export default function AdminJoueurs() {
     }
   };
 
-  const fetchEquipes = async () => {
+  const fetchMaps = async () => {
     const { data, error } = await supabase
-      .from("teams")
-      .select("id, name, season_id, logo_url, franchise_name, structure_name, seasons(name)")
-      .order("name");
-
-    if (error || !data) {
-      setMessage("❌ Erreur lors du chargement des équipes.");
-      return;
-    }
-
-    const formatted: Equipe[] = data.map((eq) => {
-      const seasons = eq.seasons as { name: string }[] | { name: string } | null;
-      const seasonName =
-        Array.isArray(seasons) && seasons.length > 0
-          ? seasons[0].name
-          : seasons && typeof seasons === "object" && "name" in seasons
-          ? seasons.name
-          : "Saison inconnue";
-
-      return {
-        id: eq.id,
-        name: eq.name,
-        season_id: eq.season_id,
-        season_name: seasonName,
-        logo_url: eq.logo_url ?? undefined,
-        franchise_name: eq.franchise_name,
-        structure_name: eq.structure_name ?? undefined,
-      };
-    });
-
-    console.log("Équipes chargées :", formatted);
-    setEquipes(formatted);
-  };
-
-  const fetchJoueurs = async () => {
-    const { data, error } = await supabase
-      .from("players")
-      .select("id, team_id, gamertag, role, first_name, last_name, birth_country, birth_date, image_url, teams(name)")
+      .from("maps")
+      .select("id, season_id, name, image_url, seasons(name)")
       .order("id");
 
     if (error || !data) {
-      setMessage("❌ Erreur lors du chargement des joueurs.");
+      setMessage("❌ Erreur lors du chargement des maps.");
       return;
     }
 
-    const formatted: Joueur[] = (data as PlayerFromSupabase[]).map((j) => {
-      let teamName = "Équipe inconnue";
+    const formatted: Map[] = (data as MapFromSupabase[]).map((m) => {
+      let seasonName = "Saison inconnue";
 
-      if (j.teams) {
-        if (Array.isArray(j.teams)) {
-          teamName = j.teams.length > 0 ? j.teams[0].name : "Équipe inconnue";
-        } else if ("name" in j.teams) {
-          teamName = j.teams.name;
+      if (m.seasons) {
+        if (Array.isArray(m.seasons)) {
+          seasonName = m.seasons.length > 0 ? m.seasons[0].name : "Saison inconnue";
+        } else if ("name" in m.seasons) {
+          seasonName = m.seasons.name;
         }
       }
 
       return {
-        id: j.id,
-        team_id: j.team_id,
-        gamertag: j.gamertag,
-        role: j.role,
-        team_name: teamName,
-        first_name: j.first_name,
-        last_name: j.last_name,
-        birth_country: j.birth_country,
-        birth_date: j.birth_date,
-        image_url: j.image_url,
+        id: m.id,
+        season_id: m.season_id,
+        name: m.name,
+        image_url: m.image_url,
+        season_name: seasonName,
       };
     });
 
-    setJoueurs(formatted);
+    setMaps(formatted);
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
       setUploadProgress(10);
       
-      // Créer un nom de fichier unique
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       setUploadProgress(30);
 
-      // Upload vers Supabase Storage
       const { error } = await supabase.storage
-        .from('player-images')
+        .from('map-images')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -157,9 +104,8 @@ export default function AdminJoueurs() {
 
       setUploadProgress(70);
 
-      // Récupérer l'URL publique
       const { data: urlData } = supabase.storage
-        .from('player-images')
+        .from('map-images')
         .getPublicUrl(filePath);
 
       setUploadProgress(100);
@@ -175,9 +121,9 @@ export default function AdminJoueurs() {
     }
   };
 
-  const addJoueur = async (e: React.FormEvent) => {
+  const addMap = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gamertag.trim() || !teamChoisie || !role.trim() || !firstName.trim() || !lastName.trim()) {
+    if (!name.trim() || !saisonSelectionnee) {
       setMessage("⚠️ Veuillez remplir tous les champs obligatoires.");
       return setTimeout(() => setMessage(null), 3000);
     }
@@ -187,7 +133,6 @@ export default function AdminJoueurs() {
     try {
       let finalImageUrl = null;
 
-      // Si un fichier a été sélectionné, l'uploader
       if (imageFile) {
         finalImageUrl = await uploadImage(imageFile);
         if (!finalImageUrl) {
@@ -197,69 +142,54 @@ export default function AdminJoueurs() {
       }
 
       const { error } = await supabase
-        .from("players")
+        .from("maps")
         .insert([{ 
-          team_id: Number(teamChoisie), 
-          gamertag: gamertag.trim(), 
-          role: role.trim(),
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          birth_country: birthCountry.trim() || null,
-          birth_date: birthDate || null,
+          season_id: Number(saisonSelectionnee), 
+          name: name.trim(),
           image_url: finalImageUrl,
         }]);
         
       if (error) throw error;
       
-      setGamertag("");
-      setRole("");
-      setFirstName("");
-      setLastName("");
-      setBirthCountry("");
-      setBirthDate("");
+      setName("");
       setImageUrl("");
       setImageFile(null);
-      setTeamChoisie("");
       setSaisonSelectionnee("");
       
-      setMessage("✅ Joueur ajouté avec succès !");
-      await fetchJoueurs();
+      setMessage("✅ Map ajoutée avec succès !");
+      await fetchMaps();
     } catch (err) {
       console.error("Erreur lors de l'ajout :", err);
-      setMessage("❌ Erreur lors de l'ajout du joueur.");
+      setMessage("❌ Erreur lors de l'ajout de la map.");
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(null), 3000);
     }
   };
 
-  const confirmDeleteJoueur = (id: number, gamertag: string) => setPopup({ id, gamertag });
+  const confirmDeleteMap = (id: number, name: string) => setPopup({ id, name });
 
-  const deleteJoueur = async (id: number) => {
+  const deleteMap = async (id: number) => {
     setIsLoading(true);
     
     try {
-      // Récupérer les infos du joueur pour supprimer son image
-      const joueur = joueurs.find(j => j.id === id);
+      const map = maps.find(m => m.id === id);
       
-      if (joueur?.image_url) {
-        // Extraire le nom du fichier de l'URL
-        const urlParts = joueur.image_url.split('/');
+      if (map?.image_url) {
+        const urlParts = map.image_url.split('/');
         const fileName = urlParts[urlParts.length - 1];
         
-        // Supprimer l'image du storage
         await supabase.storage
-          .from('player-images')
+          .from('map-images')
           .remove([fileName]);
       }
       
-      // Supprimer le joueur de la base de données
-      const { error } = await supabase.from("players").delete().eq("id", id);
+      const { error } = await supabase.from("maps").delete().eq("id", id);
       
       if (error) throw error;
       
-      setMessage("🗑️ Joueur supprimé avec succès !");
-      await fetchJoueurs();
+      setMessage("🗑️ Map supprimée avec succès !");
+      await fetchMaps();
     } catch (err) {
       console.error("Erreur lors de la suppression :", err);
       setMessage("❌ Erreur lors de la suppression.");
@@ -272,18 +202,15 @@ export default function AdminJoueurs() {
 
   useEffect(() => {
     fetchSaisons();
-    fetchEquipes();
-    fetchJoueurs();
+    fetchMaps();
   }, []);
-
-  const filteredJoueurs = teamChoisie ? joueurs.filter((j) => j.team_id === teamChoisie) : joueurs;
 
   return (
     <div className="min-h-screen bg-[#f4f1f7] font-cdl pt-16">
       <NavbarreAdmin />
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Gestion des joueurs</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Gestion des maps</h1>
           <button
             onClick={() => navigate("/admin-creation")}
             className="bg-[#2495d8] hover:bg-[#1a73b8] text-white px-4 py-2 rounded transition"
@@ -291,6 +218,7 @@ export default function AdminJoueurs() {
             Retour à l'accueil création
           </button>
         </div>
+        
         {message && (
           <div
             className={`mb-4 p-3 rounded text-sm ${
@@ -302,46 +230,36 @@ export default function AdminJoueurs() {
             {message}
           </div>
         )}
-        <AdminAjoutJoueur
-          gamertag={gamertag}
-          setGamertag={setGamertag}
-          role={role}
-          setRole={setRole}
-          firstName={firstName}
-          setFirstName={setFirstName}
-          lastName={lastName}
-          setLastName={setLastName}
-          birthCountry={birthCountry}
-          setBirthCountry={setBirthCountry}
-          birthDate={birthDate}
-          setBirthDate={setBirthDate}
+        
+        <AdminAjoutMap
+          name={name}
+          setName={setName}
           imageUrl={imageUrl}
           setImageUrl={setImageUrl}
           imageFile={imageFile}
           setImageFile={setImageFile}
-          teamChoisie={teamChoisie}
-          setTeamChoisie={setTeamChoisie}
           saisonSelectionnee={saisonSelectionnee}
           setSaisonSelectionnee={setSaisonSelectionnee}
-          equipes={equipes}
           saisons={saisons}
-          addJoueur={addJoueur}
+          addMap={addMap}
           isLoading={isLoading}
           uploadProgress={uploadProgress}
         />
-        <AdminTableauJoueur
-          joueurs={filteredJoueurs}
-          deleteJoueur={confirmDeleteJoueur}
+        
+        <AdminTableauMaps
+          maps={maps}
+          deleteMap={confirmDeleteMap}
           isLoading={isLoading}
-          equipes={equipes}
-          teamChoisie={teamChoisie}
-          setTeamChoisie={setTeamChoisie}
+          saisons={saisons}
+          saisonChoisie={saisonChoisie}
+          setSaisonChoisie={setSaisonChoisie}
         />
+        
         {popup && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
             <div className="bg-white p-6 rounded shadow max-w-sm w-full">
               <p className="mb-4 text-gray-700">
-                Supprimer le joueur <span className="font-semibold">{popup.gamertag}</span> ?
+                Supprimer la map <span className="font-semibold">{popup.name}</span> ?
               </p>
               <div className="flex justify-end gap-4">
                 <button
@@ -351,7 +269,7 @@ export default function AdminJoueurs() {
                   Annuler
                 </button>
                 <button
-                  onClick={() => deleteJoueur(popup.id)}
+                  onClick={() => deleteMap(popup.id)}
                   className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-800 transition"
                   disabled={isLoading}
                 >

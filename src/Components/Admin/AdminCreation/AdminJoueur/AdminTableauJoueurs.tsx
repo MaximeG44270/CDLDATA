@@ -66,7 +66,7 @@ export const AdminTableauJoueur: React.FC<Props> = ({
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100 border-b-2 border-gray-300">
-              <th className="text-left p-3 font-semibold text-gray-700">ID</th>
+              <th className="text-left p-3 font-semibold text-gray-700">Image</th>
               <th className="text-left p-3 font-semibold text-gray-700">Prénom</th>
               <th className="text-left p-3 font-semibold text-gray-700">Nom</th>
               <th className="text-left p-3 font-semibold text-gray-700">Gamertag</th>
@@ -80,12 +80,21 @@ export const AdminTableauJoueur: React.FC<Props> = ({
           <tbody>
             {joueursFiltres.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center p-6 text-gray-500">Aucun joueur trouvé</td>
+                <td colSpan={10} className="text-center p-6 text-gray-500">Aucun joueur trouvé</td>
               </tr>
             ) : (
               joueursFiltres.map((joueur) => (
                 <tr key={joueur.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                  <td className="p-3 text-gray-600">{joueur.id}</td>
+                  <td className="p-3">
+                    <img 
+                      src={joueur.image_url || "https://via.placeholder.com/48?text=?"} 
+                      alt={joueur.gamertag}
+                      className="w-12 h-12 object-cover "
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/48?text=?";
+                      }}
+                    />
+                  </td>
                   <td className="p-3 text-gray-800">
                     {joueur.first_name || <span className="text-gray-400 italic">Non renseigné</span>}
                   </td>
@@ -125,12 +134,24 @@ export const AdminTableauJoueur: React.FC<Props> = ({
         ) : (
           joueursFiltres.map((joueur) => (
             <div key={joueur.id} className="bg-gray-50 p-4 rounded border border-gray-200">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-semibold text-[#2495d8] text-lg">{joueur.gamertag}</p>
-                  <p className="text-sm text-gray-600">{joueur.first_name} {joueur.last_name}</p>
+              <div className="flex items-start gap-3 mb-3">
+                <img 
+                  src={joueur.image_url || "https://via.placeholder.com/64?text=?"} 
+                  alt={joueur.gamertag}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://via.placeholder.com/64?text=?";
+                  }}
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-[#2495d8] text-lg">{joueur.gamertag}</p>
+                      <p className="text-sm text-gray-600">{joueur.first_name} {joueur.last_name}</p>
+                    </div>
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{joueur.role}</span>
+                  </div>
                 </div>
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{joueur.role}</span>
               </div>
               <div className="space-y-1 text-sm text-gray-600 mb-3">
                 <p><span className="font-semibold">Équipe:</span> {joueur.team_name}</p>

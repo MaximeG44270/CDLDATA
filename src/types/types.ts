@@ -18,6 +18,7 @@ export interface Joueur {
   last_name?: string;
   birth_country?: string;
   birth_date?: string;
+  image_url?: string;
 }
 
 export interface Saison {
@@ -25,4 +26,12 @@ export interface Saison {
   name: string;
   start_date: string | null;
   end_date: string | null;
+}
+
+export interface Map {
+  id: number;
+  season_id: number;
+  name: string;
+  image_url?: string;
+  season_name?: string;
 }

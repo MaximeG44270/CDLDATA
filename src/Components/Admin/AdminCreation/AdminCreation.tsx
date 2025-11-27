@@ -26,9 +26,16 @@ export default function AdminCreation() {
 
         <div
           onClick={() => navigate("/admin-joueurs")}
-          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition"
+          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition mb-4"
         >
           <p>Formulaire de création pour un joueur</p>
+        </div>
+
+        <div
+          onClick={() => navigate("/admin-maps")}
+          className="bg-white p-4 rounded shadow hover:bg-gray-100 cursor-pointer transition"
+        >
+          <p>Formulaire de création pour une map</p>
         </div>
       </div>
     </div>

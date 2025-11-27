@@ -8,6 +8,7 @@ import AdminCreation from './Components/Admin/AdminCreation/AdminCreation';
 import AdminSaison from './Components/Admin/AdminCreation/AdminSaison/AdminSaison';
 import AdminEquipe from './Components/Admin/AdminCreation/AdminEquipe/AdminEquipe';
 import AdminJoueurs from './Components/Admin/AdminCreation/AdminJoueur/AdminJoueurs';
+import AdminMaps from './Components/Admin/AdminCreation/AdminMap/AdminMaps';
 
 const AdminRoute = () => {
   const { isAdmin } = useAdmin();
@@ -27,6 +28,7 @@ function App() {
         <Route path="/admin-saison" element={<AdminSaison />} />
         <Route path="/admin-equipe" element={<AdminEquipe />} />
         <Route path="/admin-joueurs" element={<AdminJoueurs />} />
+        <Route path='/admin-maps' element={<AdminMaps />} />
       </Route>
     </Routes>
   );
